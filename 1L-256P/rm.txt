@@ -1,0 +1,14 @@
+1 Local:xxxxx gửi SETUP_REQ cho 256P:36422
+nếu nhận được SETUP_RESP thì tăng biến đếm
+
+1-1
+
+run P-> L theo thứ tự
+
+
+ip addr show lo
+
+chmod +x lo.sh   -> thêm loopback
+chmod +x lo_del.sh
+
+đang ko bind cho client (Local) gửi bằng cổng 36422 được

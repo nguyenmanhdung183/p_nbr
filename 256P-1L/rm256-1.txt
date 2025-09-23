@@ -1,0 +1,4 @@
+256 peer gửi SETUP_REQUEST đến cho 1 Local 
+và local gửi RESP cho 256 Peer đó
+
+Run L-> P
