@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-
+#define MAX_BUFF 2048
 
 #define LOG_DETAIL 1
 #undef LOG_DETAIL
@@ -22,7 +22,7 @@
 #define BUFFER_SIZE 2048
 
 #define SETUP_REQ_HEX_STREAM "0024004100000100f4003a000002001500080054f24000396a4000fa0027000800020054f240396a4006560054f2400051d60b863300010029400100003740050000000000"
-#define SETUP_RESP_HEX_STREAM "0200004100000100f4003a000002001500080054f240" // ví dụ
+#define SETUP_RESP_HEX_STREAM "2024004200000100f6003b000002001500080054f24000396a4000fa0028000800020054f240396a4003400054f240004cf406a43300010029400120003740064002659020c0" // ví dụ
 
 int hexstr_to_bin(const char *hexstr, unsigned char *buf, size_t max_len) {
     size_t len = strlen(hexstr);
@@ -49,12 +49,34 @@ void *client_handler(void *arg) {
     free(arg);
 
     unsigned char buf[BUFFER_SIZE];
-    ssize_t n = recv(connfd, buf, sizeof(buf), 0);
-    if (n <= 0) {
-        if (n < 0) perror("recv");
-        close(connfd);
-        return NULL;
-    }
+    // ssize_t n = recv(connfd, buf, sizeof(buf), 0);
+    // if (n <= 0) {
+    //     if (n < 0) perror("recv");
+    //     close(connfd);
+    //     return NULL;
+    // }
+///------------
+
+struct sockaddr_in from;
+socklen_t from_len = sizeof(from);
+struct sctp_sndrcvinfo info;
+int flags;
+
+ssize_t n = sctp_recvmsg(connfd,
+                         buf,
+                         sizeof(buf),
+                         (struct sockaddr *)&from,
+                         &from_len,
+                         &info,
+                         &flags);
+
+if (n <= 0) {
+    if (n < 0) perror("sctp_recvmsg");
+    close(connfd);
+    return NULL;
+}
+///------------
+    
 #ifdef LOG_DETAIL
     printf("=== New connection, received %zd bytes ===\n", n);
     print_hex(buf, (int)n);
@@ -89,8 +111,17 @@ void *client_handler(void *arg) {
         return NULL;
     }
 
-    ssize_t sent = send(connfd, resp_bin, resp_len, 0);
-    if (sent < 0) perror("send");
+    // ssize_t sent = send(connfd, resp_bin, resp_len, 0);
+    // if (sent < 0) perror("send");
+    // else printf("Sent response (%zd bytes)\n\n\n", sent);
+
+    ssize_t sent = sctp_sendmsg(connfd,
+                                resp_bin,
+                                resp_len,
+                                NULL, 0,
+                                0, 0, 0, 0, 0);
+
+    if (sent < 0) perror("sctp_sendmsg");
     else printf("Sent response (%zd bytes)\n\n\n", sent);
 
     close(connfd);

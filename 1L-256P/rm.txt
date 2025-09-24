@@ -12,3 +12,6 @@ chmod +x lo.sh   -> thêm loopback
 chmod +x lo_del.sh
 
 đang ko bind cho client (Local) gửi bằng cổng 36422 được
+
+
+1 local dem tong so RESP
